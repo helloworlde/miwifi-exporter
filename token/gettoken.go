@@ -57,7 +57,7 @@ func GetToken(ip, passwd string) Auth {
 	data["nonce"] = []string{nonce}
 	data["password"] = []string{hexpwd2}
 	data["username"] = []string{"admin"}
-	res, _ = client.PostForm("http://192.168.31.1/cgi-bin/luci/api/xqsystem/login", data)
+	res, _ = client.PostForm(fmt.Sprintf("http://%s/cgi-bin/luci/api/xqsystem/login", ip), data)
 	body, _ = ioutil.ReadAll(res.Body)
 	auth := Auth{}
 

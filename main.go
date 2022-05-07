@@ -35,9 +35,9 @@ func main() {
 	http.Handle(*metricsPath, promhttp.HandlerFor(registry, promhttp.HandlerOpts{}))
 	http.HandleFunc("/", func(w http.ResponseWriter, r *http.Request) {
 		_, err := w.Write([]byte(`<html>
-			<head><title>A Prometheus Exporter</title></head>
+			<head><title>MiWiFi Router Prometheus Exporter</title></head>
 			<body>
-			<h1>A Prometheus Exporter</h1>
+			<h1>MiWiFi Router Prometheus Exporter</h1>
 			<p><a href='/metrics'>Metrics</a></p>
 			</body>
 			</html>`))
