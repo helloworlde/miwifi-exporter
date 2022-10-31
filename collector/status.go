@@ -108,8 +108,9 @@ func GetIPtoMAC() {
 		os.Exit(1)
 	}
 	body, err := ioutil.ReadAll(res.Body)
+	log.Println("Get IP to Mac: ", string(body))
 	count := 0
-	if err = json.Unmarshal([]byte(body), &Mactoip); err != nil {
+	if err = json.Unmarshal(body, &Mactoip); err != nil {
 		log.Println("Token失效，正在重试获取")
 		count++
 		time.Sleep(1 * time.Minute)
@@ -132,8 +133,9 @@ func GetMiwifiStatus() {
 	}
 
 	body, err := ioutil.ReadAll(res.Body)
+	log.Println("Wifi Status: ", string(body))
 	count := 0
-	if err = json.Unmarshal([]byte(body), &DevStatus); err != nil {
+	if err = json.Unmarshal(body, &DevStatus); err != nil {
 		fmt.Println(DevStatus.Dev)
 		log.Println("Token失效，正在重试获取", err)
 		config.GetConfig()

@@ -84,8 +84,9 @@ func GetWAN() {
 		os.Exit(1)
 	}
 	body, err := ioutil.ReadAll(res.Body)
+	log.Println("Get WAN: ", string(body))
 	count := 0
-	if err = json.Unmarshal([]byte(body), &WANInfo); err != nil {
+	if err = json.Unmarshal(body, &WANInfo); err != nil {
 		log.Println("Token失效，正在重试获取")
 		config.GetConfig()
 		count++
