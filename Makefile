@@ -32,3 +32,9 @@ run:   build
 
 clean:
 		rm -rf ./log
+
+build-image:
+		docker build -t hellowoodes/miwifi-exporter .
+
+push-image:
+		docker push hellowoodes/miwifi-exporter
