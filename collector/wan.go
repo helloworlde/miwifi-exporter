@@ -10,7 +10,6 @@ import (
 	"os"
 	"strconv"
 	"strings"
-	"time"
 
 	"github.com/helloworlde/miwifi-exporter/config"
 )
@@ -85,15 +84,10 @@ func GetWAN() {
 	}
 	body, err := ioutil.ReadAll(res.Body)
 	log.Println("Get WAN StatusCode: ", res.StatusCode, " Content ", string(body))
-	count := 0
-	if err = json.Unmarshal(body, &WANInfo); err != nil {
-		log.Println("Token失效，正在重试获取")
-		config.GetConfig()
-		count++
-		time.Sleep(1 * time.Minute)
-		if count >= 5 {
-			log.Println("获取状态错误，可能原因：1.账号或者密码错误，2.路由器鉴权错误", err)
-			os.Exit(1)
-		}
+
+	err = json.Unmarshal(body, &WANInfo)
+	if err != nil || WANInfo.Code != 200 {
+		log.Println("获取状态错误，可能原因：1.账号或者密码错误，2.路由器鉴权错误, err: ", err, " StatusCode: ", WANInfo.Code)
+		os.Exit(1)
 	}
 }

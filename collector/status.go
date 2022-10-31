@@ -7,7 +7,6 @@ import (
 	"log"
 	"net/http"
 	"os"
-	"time"
 
 	"github.com/helloworlde/miwifi-exporter/config"
 )
@@ -109,15 +108,10 @@ func GetIPtoMAC() {
 	}
 	body, err := ioutil.ReadAll(res.Body)
 	log.Println("Get IP to Mac, StatusCode: ", res.StatusCode, " Content ", string(body))
-	count := 0
-	if err = json.Unmarshal(body, &Mactoip); err != nil {
-		log.Println("Token失效，正在重试获取")
-		count++
-		time.Sleep(1 * time.Minute)
-		if count >= 5 {
-			log.Println("获取状态错误，可能原因：1.账号或者密码错误，2.路由器鉴权错误", err)
-			os.Exit(1)
-		}
+	err = json.Unmarshal(body, &Mactoip)
+	if err != nil || Mactoip.Code != 200 {
+		log.Println("获取状态错误，可能原因：1.账号或者密码错误，2.路由器鉴权错误, err: ", err, " StatusCode: ", Mactoip.Code)
+		os.Exit(1)
 	}
 
 }
@@ -134,17 +128,10 @@ func GetMiwifiStatus() {
 
 	body, err := ioutil.ReadAll(res.Body)
 	log.Println("Wifi Status, StatusCode: ", res.StatusCode, " Content ", string(body))
-	count := 0
-	if err = json.Unmarshal(body, &DevStatus); err != nil {
-		fmt.Println(DevStatus.Dev)
-		log.Println("Token失效，正在重试获取", err)
-		config.GetConfig()
-		GetMiwifiStatus()
-		count++
-		time.Sleep(1 * time.Minute)
-		if count >= 5 {
-			log.Println("获取状态错误，可能原因：1.账号或者密码错误，2.路由器鉴权错误", err)
-			os.Exit(1)
-		}
+
+	err = json.Unmarshal(body, &DevStatus)
+	if err != nil || DevStatus.Code != 200 {
+		log.Println("获取状态错误，可能原因：1.账号或者密码错误，2.路由器鉴权错误, err: ", err, " StatusCode: ", DevStatus.Code)
+		os.Exit(1)
 	}
 }
