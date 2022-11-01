@@ -83,11 +83,11 @@ func GetWAN() {
 		os.Exit(1)
 	}
 	body, err := ioutil.ReadAll(res.Body)
-	log.Println("Get WAN StatusCode: ", res.StatusCode, " Content ", string(body))
+	log.Println("Get WAN HttpStatusCode: ", res.StatusCode, " Content ", string(body))
 
 	err = json.Unmarshal(body, &WANInfo)
-	if err != nil || WANInfo.Code != 200 {
-		log.Println("获取状态错误，可能原因：1.账号或者密码错误，2.路由器鉴权错误, err: ", err, " StatusCode: ", WANInfo.Code)
+	if err != nil || WANInfo.Code != 0 {
+		log.Println("获取状态错误，可能原因：1.账号或者密码错误，2.路由器鉴权错误, err: ", err, " HttpStatusCode: ", WANInfo.Code)
 		os.Exit(1)
 	}
 }
