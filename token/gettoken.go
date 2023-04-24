@@ -2,6 +2,8 @@ package token
 
 import (
 	"crypto/sha1"
+	"crypto/sha256"
+	"encoding/hex"
 	"encoding/json"
 	"fmt"
 	"io/ioutil"
@@ -46,16 +48,18 @@ func GetToken(ip, passwd string) Auth {
 		}
 	}
 	nonce := "0_" + mac + "_" + strconv.Itoa(int(time.Now().Unix())) + "_" + strconv.Itoa(int(rand.Float64()*10000))
-	pwd := sha1.New()
-	pwd.Write([]byte(passwd + key))
-	hexpwd1 := fmt.Sprintf("%x", pwd.Sum(nil))
-	pwd2 := sha1.New()
-	pwd2.Write([]byte(nonce + hexpwd1))
-	hexpwd2 := fmt.Sprintf("%x", pwd2.Sum(nil))
+	encryptType := getEncryptType(ip)
+	password := ""
+	if encryptType == 1 {
+		password = encryptPasswordBySha256(passwd, key, nonce)
+	} else {
+		password = encryptPasswordBySha1(passwd, key, nonce)
+	}
+
 	data := make(url.Values)
 	data["logtype"] = []string{"2"}
 	data["nonce"] = []string{nonce}
-	data["password"] = []string{hexpwd2}
+	data["password"] = []string{password}
 	data["username"] = []string{"admin"}
 	res, _ = client.PostForm(fmt.Sprintf("http://%s/cgi-bin/luci/api/xqsystem/login", ip), data)
 	body, _ = ioutil.ReadAll(res.Body)
@@ -68,4 +72,61 @@ func GetToken(ip, passwd string) Auth {
 	log.Println("获取Token成功")
 	return auth
 
+}
+
+func encryptPasswordBySha1(passwd string, key string, nonce string) string {
+	pwd := sha1.New()
+	pwd.Write([]byte(passwd + key))
+	hexpwd1 := fmt.Sprintf("%x", pwd.Sum(nil))
+	pwd2 := sha1.New()
+	pwd2.Write([]byte(nonce + hexpwd1))
+	hexpwd2 := fmt.Sprintf("%x", pwd2.Sum(nil))
+	return hexpwd2
+}
+
+func encryptPasswordBySha256(pwd string, key string, nonce string) string {
+	hash1 := sha256.Sum256([]byte(pwd + key))
+	hash2 := sha256.Sum256([]byte(nonce + hex.EncodeToString(hash1[:])))
+	return hex.EncodeToString(hash2[:])
+}
+
+func getEncryptType(ip string) int {
+	url := fmt.Sprintf("http://%s/cgi-bin/luci/api/xqsystem/init_info", ip)
+
+	// 创建 GET 请求
+	req, err := http.NewRequest("GET", url, nil)
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	// 发送请求
+	client := http.DefaultClient
+	resp, err := client.Do(req)
+	if err != nil {
+		log.Fatal(err)
+	}
+	defer resp.Body.Close()
+
+	// 读取响应内容
+	body, err := ioutil.ReadAll(resp.Body)
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	// 解析 JSON 数据
+	var response map[string]json.RawMessage
+
+	err = json.Unmarshal(body, &response)
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	// 获取 newEncryptMode 字段的值
+	var newEncryptMode int
+	err = json.Unmarshal(response["newEncryptMode"], &newEncryptMode)
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	return newEncryptMode
 }
