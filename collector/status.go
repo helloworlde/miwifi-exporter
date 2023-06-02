@@ -109,7 +109,7 @@ func GetIPtoMAC() {
 	body, err := ioutil.ReadAll(res.Body)
 	log.Println("Get IP to Mac, HttpStatusCode: ", res.StatusCode, " Content ", string(body))
 	err = json.Unmarshal(body, &Mactoip)
-	if err != nil || WANInfo.Code != 0 {
+	if Mactoip.Code != 0 {
 		log.Println("获取状态错误，可能原因：1.账号或者密码错误，2.路由器鉴权错误, err: ", err, " HttpStatusCode: ", Mactoip.Code)
 		os.Exit(1)
 	}
