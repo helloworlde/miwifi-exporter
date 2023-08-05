@@ -122,11 +122,15 @@ func getEncryptType(ip string) int {
 	}
 
 	// 获取 newEncryptMode 字段的值
-	var newEncryptMode int
-	err = json.Unmarshal(response["newEncryptMode"], &newEncryptMode)
-	if err != nil {
-		log.Fatal(err)
+	_, exist := response["newEncryptMode"]
+	if exist {
+		var newEncryptMode int
+		err = json.Unmarshal(response["newEncryptMode"], &newEncryptMode)
+		if err != nil {
+			log.Fatal(err)
+		}
+		return newEncryptMode
 	}
 
-	return newEncryptMode
+	return 0
 }
